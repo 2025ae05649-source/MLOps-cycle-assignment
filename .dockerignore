@@ -1,0 +1,8 @@
+.venv
+mlruns
+notebooks
+reports
+screenshots
+tests
+.git
+__pycache__

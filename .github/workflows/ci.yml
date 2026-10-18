@@ -1,0 +1,75 @@
+name: CI pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  lint-test-train:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Lint with flake8
+        run: flake8 . --count --show-source --statistics
+
+      - name: Train models (logs to MLflow)
+        run: python src/train.py
+
+      - name: Run unit tests
+        run: pytest -v --junitxml=test-results.xml
+
+      - name: Upload model and metrics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: model-and-metrics
+          path: |
+            models/
+            reports/figures/
+            test-results.xml
+
+      - name: Upload MLflow runs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mlruns
+          path: mlruns/
+
+  docker-build:
+    needs: lint-test-train
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download trained model from previous job
+        uses: actions/download-artifact@v4
+        with:
+          name: model-and-metrics
+
+      - name: Build Docker image
+        run: docker build -t heart-disease-api:${{ github.sha }} .
+
+      - name: Run container and test /predict
+        run: |
+          docker run -d --name api -p 8000:8000 heart-disease-api:${{ github.sha }}
+          sleep 8
+          curl -f http://localhost:8000/health
+          curl -f -X POST http://localhost:8000/predict \
+            -H "Content-Type: application/json" -d @sample_input.json
+          docker logs api

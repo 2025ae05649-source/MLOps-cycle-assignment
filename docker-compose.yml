@@ -1,0 +1,37 @@
+# Runs the API + Prometheus + Grafana together for monitoring
+#   docker compose up -d --build
+# API:        http://localhost:8000/docs
+# Prometheus: http://localhost:9090
+# Grafana:    http://localhost:3300  (admin / admin)
+services:
+  api:
+    build: .
+    image: heart-disease-api:v1
+    ports:
+      - "8000:8000"
+
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    depends_on:
+      - api
+
+  grafana:
+    image: grafana/grafana:11.2.0
+    ports:
+      - "3300:3000"   # 3000 is sometimes busy on my laptop, so using 3300
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      # let me see dashboards without logging in (read only)
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Viewer
+    volumes:
+      - ./monitoring/grafana/datasource.yml:/etc/grafana/provisioning/datasources/datasource.yml
+      - ./monitoring/grafana/dashboards.yml:/etc/grafana/provisioning/dashboards/dashboards.yml
+      - ./monitoring/grafana/heart-api-dashboard.json:/var/lib/grafana/dashboards/heart-api-dashboard.json
+    depends_on:
+      - prometheus

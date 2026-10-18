@@ -1,0 +1,36 @@
+{
+  "best_model": "logistic_regression",
+  "results": {
+    "logistic_regression": {
+      "best_params": {
+        "clf__C": 1,
+        "clf__penalty": "l2"
+      },
+      "cv_accuracy": 0.8471088435374149,
+      "cv_precision": 0.8767529146045769,
+      "cv_recall": 0.783399209486166,
+      "cv_roc_auc": 0.9038658603875996,
+      "test_accuracy": 0.8852459016393442,
+      "test_precision": 0.8387096774193549,
+      "test_recall": 0.9285714285714286,
+      "test_f1": 0.8813559322033898,
+      "test_roc_auc": 0.9675324675324676
+    },
+    "random_forest": {
+      "best_params": {
+        "clf__max_depth": 4,
+        "clf__min_samples_split": 2,
+        "clf__n_estimators": 200
+      },
+      "cv_accuracy": 0.8345238095238094,
+      "cv_precision": 0.8566363636363636,
+      "cv_recall": 0.782608695652174,
+      "cv_roc_auc": 0.9017623278492843,
+      "test_accuracy": 0.8688524590163934,
+      "test_precision": 0.8571428571428571,
+      "test_recall": 0.8571428571428571,
+      "test_f1": 0.8571428571428571,
+      "test_roc_auc": 0.949134199134199
+    }
+  }
+}
